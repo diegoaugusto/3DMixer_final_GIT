@@ -81,15 +81,7 @@ BOOL stopWasPressed = FALSE;
 	[super init];
 	float** allSparseCoeficients[121][360];
 	int *allSparseCoeficientsSize[121][360];
-	
-	/*float** hrtf10 = readHrtf(0, 10, 'L', 24, 174);
-	float** hrtf350 = readHrtf(0, 350, 'L', 24, 174);
-	
-	for (int i = 0; i < 2; i++) {
-		printf("[10 0%d] = %1.14f; [10 1%d] = %1.14f; [350 0%d] = %1.14f; [350 1%d] = %1.14f;\n", i, hrtf10[0][i], i, hrtf10[1][i], i, hrtf350[0][i], i, hrtf350[1][i]);
-	}*/
-	
-	
+		
 	INIT_VARIABLES; INIT_RUNTIME;
 	getAllSparseCoefficients('L', allSparseCoeficients, allSparseCoeficientsSize);
 	getAllRespImp(allSparseCoeficients, allSparseCoeficientsSize, allRespImp, allRespImpSize);
@@ -101,16 +93,6 @@ BOOL stopWasPressed = FALSE;
 				flipAzim = 0;
 			}
 			
-			/*printf("el = %d; az = %d; flip = %d\n", el, az, flipAzim);
-			
-			WhrtfForPositionBean *whrtfForPositionBeanFlip = [[WhrtfForPositionBean alloc] init];
-			whrtfForPositionBeanFlip.elevation = el;
-			whrtfForPositionBeanFlip.azimuth = flipAzim;
-			whrtfForPositionBeanFlip.whrtfLeft = allRespImp[el+40][flipAzim];
-			whrtfForPositionBeanFlip.whrtfLeftLength = allRespImpSize[el+40][flipAzim];
-			whrtfForPositionBeanFlip.whrtfRight = allRespImp[el+40][az];
-			whrtfForPositionBeanFlip.whrtfRightLength = allRespImpSize[el+40][az];
-			*/
 			WhrtfForPositionBean *whrtfForPositionBean = [[WhrtfForPositionBean alloc] init];
 			whrtfForPositionBean.elevation = el;
 			whrtfForPositionBean.azimuth = az;
@@ -120,17 +102,11 @@ BOOL stopWasPressed = FALSE;
 			whrtfForPositionBean.whrtfRightLength = allRespImpSize[el+40][flipAzim];
 			
 			whrtfs[el+40][az] = whrtfForPositionBean;
-			//whrtfs[el+40][flipAzim] = whrtfForPositionBeanFlip;
 		}
 	
 	}
 	
 	END_RUNTIME; printf("[whrtf processing: ]"); PRINT_RUNTIME;
-	
-	/*float* teste = allRespImp[0+40][0];
-	for(int i = 0; i < 3; i++) {
-		printf("teste[%d] = %1.12f\n", i, teste[i]);
-	}*/
 	
 	[self hideSplashScreen];
 	[self showMainWindow];
@@ -398,10 +374,6 @@ static int r = 0;
 	SDL_CloseAudio();
 	
 	free(audio_chunk); audio_chunk = NULL;
-	//free(audio_pos); audio_pos = NULL;
-	//free(originalStream[0]); originalStream[0] = NULL;
-	//free(originalStream[1]); originalStream[1] = NULL;
-	//free(originalStream); originalStream = NULL;
 	audio_len = 0;
 	r = 0;
 	
@@ -436,7 +408,6 @@ void fillAudio(void *udata, Uint8 *stream, int len) {
 	int indexAzim = staticAzimuth;
 	int indexElev = staticElevation;
 	
-	//WhrtfForPositionBean *whrtfForPositionLocal = whrtfs[indexElev+40][indexAzim];
 	WhrtfForPositionBean *whrtfForPositionLocal = whrtfs[indexElev+40][indexAzim];
 	if ( audio_len == 0 ) {
 		return;
@@ -444,13 +415,6 @@ void fillAudio(void *udata, Uint8 *stream, int len) {
 	
 	// Mix as much data as possible 
 	len = ( len > audio_len ? audio_len : len );
-	//printf("len = %d, audio_len = %d\n", len, audio_len);
-	
-	
-	bool isLastFrame = false;
-	if (len != NUM_SAMPLES*4) {
-		isLastFrame = true;
-	}
 	
 	Uint8 *originalData = (Uint8 *) calloc(len, sizeof(Uint8));
 	memcpy(originalData, audio_pos, len * sizeof(Uint8));
@@ -458,14 +422,10 @@ void fillAudio(void *udata, Uint8 *stream, int len) {
 	int floatArrayLength;
 	float** data = convertToFloatArray(originalData, len, &floatArrayLength);
 	
-	//printf("floatArrayLength = %d\n", floatArrayLength);
-	
 	int PL = whrtfForPositionLocal.whrtfLeftLength;
 	int PR = whrtfForPositionLocal.whrtfRightLength;
 	int xrLength = floatArrayLength + PL;
 	//int xrLength = floatArrayLength;
-	
-	//printf("xrLength = %d\n", xrLength);
 	
 	float** Xr = (float **) calloc(2, sizeof(float*));
 	Xr[0] = (float*) calloc(xrLength, sizeof(float));
@@ -478,16 +438,7 @@ void fillAudio(void *udata, Uint8 *stream, int len) {
 		int indexR = (n + (r)*(xrLength-PR+1)-PR);
 		//int indexL = (n + (r)*(floatArrayLength-PL+1)-PL);
 		//int indexR = (n + (r)*(floatArrayLength-PR+1)-PR);
-		
-		//if (contador > 1264) {
-		//	printf("indexL = %d;\t indexR = %d\n", indexL, indexR);
-		//}
-		
-		//int indexL = (n - PL);
-		//int indexR = (n - PR);
-		
-		//printf("indexL = %d; indexR = %d\n", indexL, indexR);
-		
+				
 		// Left
 		if (indexL < 0 || indexL >= originalStreamLengthInSamples) {
 			Xr[0][n] = 0.0;
@@ -508,7 +459,6 @@ void fillAudio(void *udata, Uint8 *stream, int len) {
 	
 	int deltaL, deltaR;
 	calculaITD(indexAzim, 'L', &deltaL, &deltaR);
-	//calculaITD(60, 'L', &deltaL, &deltaR);
 	
 	float** aux = (float**) calloc(2, sizeof(float*));
 	
@@ -519,30 +469,26 @@ void fillAudio(void *udata, Uint8 *stream, int len) {
 	convAux = cconvFFT(Xr[1], xrLength, whrtfForPositionLocal.whrtfRight, whrtfForPositionLocal.whrtfRightLength);
 	//convAux = convHost1(Xr[1], xrLength, whrtfForPositionLocal.whrtfRight, whrtfForPositionLocal.whrtfRightLength);
 	aux[1] = shiftToRight(convAux, xrLength, deltaR);
-	
-	//printf("deltaL = %d, deltaR = %d\n", deltaL, deltaR);
-	
-	float* toBeWritten = (float*) calloc(3*floatArrayLength, sizeof(float));
+		
+	//float* toBeWritten = (float*) calloc(3*floatArrayLength, sizeof(float));
 	float** aux2 = (float**) calloc(2, sizeof(float*));
 	aux2[0] = (float*) calloc(floatArrayLength, sizeof(float));
 	aux2[1] = (float*) calloc(floatArrayLength, sizeof(float));
-	
-	//printf("PL = %d\n", PL);
 	
 	int j = 0;
 	int k = 0;
 	for (int i = PL; i < xrLength; i++) {
 		aux2[0][j] = aux[0][i];
-		toBeWritten[k++] = aux2[0][j];
+		//toBeWritten[k++] = aux2[0][j];
 		aux2[1][j] = aux[1][i];
-		toBeWritten[k++] = aux2[1][j];
+		//toBeWritten[k++] = aux2[1][j];
 		j++;
 	}
 	
 	// Write frames
-	if (!isLastFrame) {
+//	if (!isLastFrame) {
 //		long writtenFrames = sf_writef_float(sndFile, toBeWritten, floatArrayLength);
-	}
+//	}
 	
 	Uint8 *audioStream  = convertToUint8Array(aux2, len);
 	
@@ -563,7 +509,7 @@ void fillAudio(void *udata, Uint8 *stream, int len) {
 	free(data[0]);
 	free(data[1]);
 	free(data);
-	free(toBeWritten);
+	//free(toBeWritten);
 	
 	audio_pos += len;
 	audio_len -= len;
@@ -637,36 +583,6 @@ void fillAudio(void *udata, Uint8 *stream, int len) {
 //	}
 	
 	
-	
-	/*int azim = 60;
-	 int j = 0;
-	 for (int i = -40; i < 80; i++) {
-	 printf("i = %d\n", i);
-	 WhrtfForPositionBean *whrtfForPositionLocalBean = [WhrtfUtils calcWhrtfForPosition:i azimValue:azim];
-	 whrtfs[j++] = whrtfForPositionLocalBean;
-	 }*/
-	
-	/*int elev = 0;
-	 for (int k = 0; k < 1; k++) {
-	 for (int i = 0; i < 360; i += 1) {
-	 WhrtfForPositionBean *whrtfForPositionLocalBean = [WhrtfUtils calcWhrtfForPosition:k azimValue:i];
-	 whrtfs[k+40][i] = whrtfForPositionLocalBean;
-	 }
-	 }*/
-	
-	/*int elev = 0;
-	for (int k = 0; k < 1; k++) {
-		printf("elev = %d\n", k);
-		for (int i = 0; i < 1; i += 1) {
-			WhrtfForPositionBean *whrtfForPositionLocalBean = [WhrtfUtils calcWhrtfForPosition:k azimValue:i];
-			for(int j = 0; j < 5; j++) {
-				printf("- whrtfForPositionLocalBean.whrtfLeft[%d] = %1.15f\n", j, whrtfForPositionLocalBean.whrtfLeft[j]);				
-			}
-			//whrtfs[k+40][i] = whrtfForPositionLocalBean;
-		}
-	}*/
-	
-	
 	//WhrtfForPositionBean *whrtfForPositionLocalBean = [WhrtfUtils calcWhrtfForPosition:elev azimValue:0];
 	//whrtfs[0] = whrtfForPositionLocalBean;
 	
@@ -700,8 +616,7 @@ void fillAudioHrtfOriginal(void *udata, Uint8 *stream, int len) {
 	//#####################################
 	int indexAzim = staticAzimuth;
 	int indexElev = staticElevation;
-	
-	//WhrtfForPositionBean *whrtfForPositionLocal = whrtfs[indexElev+40][indexAzim];
+
 	WhrtfForPositionBean *whrtfForPositionLocal = whrtfs[indexElev+40][indexAzim];
 	if ( audio_len == 0 ) {
 		return;
@@ -709,8 +624,6 @@ void fillAudioHrtfOriginal(void *udata, Uint8 *stream, int len) {
 	
 	// Mix as much data as possible 
 	len = ( len > audio_len ? audio_len : len );
-	
-	//printf("len = %d, audio_len = %d\n", len, audio_len);
 	
 	bool isLastFrame = false;
 	if (len != NUM_SAMPLES*4) {
@@ -737,11 +650,6 @@ void fillAudioHrtfOriginal(void *udata, Uint8 *stream, int len) {
 		int indexL = (n + (r)*(xrLength-PL+1)-PL);
 		int indexR = (n + (r)*(xrLength-PR+1)-PR);
 		
-		//int indexL = (n - PL);
-		//int indexR = (n - PR);
-		
-		//printf("indexL = %d; indexR = %d\n", indexL, indexR);
-		
 		// Left
 		if (indexL < 0 || indexL >= originalStreamLengthInSamples) {
 			Xr[0][n] = 0.0;
@@ -762,7 +670,6 @@ void fillAudioHrtfOriginal(void *udata, Uint8 *stream, int len) {
 	
 	int deltaL, deltaR;
 	calculaITD(indexAzim, 'L', &deltaL, &deltaR);
-	//calculaITD(60, 'L', &deltaL, &deltaR);
 	
 	float** aux = (float**) calloc(2, sizeof(float*));
 	
@@ -880,36 +787,6 @@ void fillAudioHrtfOriginal(void *udata, Uint8 *stream, int len) {
 	if (sndFile == NULL) {
 		printf("Erro!!!");
 	}
-	
-	
-	
-	/*int azim = 60;
-	 int j = 0;
-	 for (int i = -40; i < 80; i++) {
-	 printf("i = %d\n", i);
-	 WhrtfForPositionBean *whrtfForPositionLocalBean = [WhrtfUtils calcWhrtfForPosition:i azimValue:azim];
-	 whrtfs[j++] = whrtfForPositionLocalBean;
-	 }*/
-	
-	/*int elev = 0;
-	 for (int k = 0; k < 1; k++) {
-	 for (int i = 0; i < 360; i += 1) {
-	 WhrtfForPositionBean *whrtfForPositionLocalBean = [WhrtfUtils calcWhrtfForPosition:k azimValue:i];
-	 whrtfs[k+40][i] = whrtfForPositionLocalBean;
-	 }
-	 }*/
-	
-	/*int elev = 0;
-	 for (int k = 0; k < 1; k++) {
-	 printf("elev = %d\n", k);
-	 for (int i = 0; i < 1; i += 1) {
-	 WhrtfForPositionBean *whrtfForPositionLocalBean = [WhrtfUtils calcWhrtfForPosition:k azimValue:i];
-	 for(int j = 0; j < 5; j++) {
-	 printf("- whrtfForPositionLocalBean.whrtfLeft[%d] = %1.15f\n", j, whrtfForPositionLocalBean.whrtfLeft[j]);				
-	 }
-	 //whrtfs[k+40][i] = whrtfForPositionLocalBean;
-	 }
-	 }*/
 	
 	
 	//WhrtfForPositionBean *whrtfForPositionLocalBean = [WhrtfUtils calcWhrtfForPosition:elev azimValue:0];

@@ -591,44 +591,6 @@ float** sumColumns(float* vec0, float* vec1, int vecLength) {
 		h_result[1][i] = (i == 0) ? vec1[i] : sum1;
 	}
 	
-
-	/*
-	float* d_vec;
-	float* d_result;
-	
-	cudaEvent_t start, stop;
-	
-	cudaEventCreate(&start);
-	cudaEventCreate(&stop);
-	cudaEventRecord(start, 0);
-
-	cudaMalloc((void**)&d_vec, size);
-    cudaMalloc((void**)&d_result, size);
-
-	// Copy vector from host memory to device memory
-    cudaMemcpy(d_vec, vec, size, cudaMemcpyHostToDevice);
-
-	// Invoke kernel
-    sumColumnsInParallel<<<blocksPerGrid, threadsPerBlock>>>(d_vec, d_result, vecLength);
-
-	// Copy result from device memory to host memory
-    // h_result contains the result in host memory
-    cudaMemcpy(h_result, d_result, size, cudaMemcpyDeviceToHost);
-	
-	cudaEventRecord(stop, 0);
-	//cudaEventSynchronize(stop);
-	
-	float elapsedTime;
-	cudaEventElapsedTime(&elapsedTime, start, stop);
-	
-	printf("\n\n -- Elapsed time: %3.15f ms --\n\n", elapsedTime);
-	
-	cudaEventDestroy(start);
-	cudaEventDestroy(stop);
-	
-	cleanDeviceMemory(d_vec);
-	cleanDeviceMemory(d_result);*/
-	
 	return h_result;
 }
 
@@ -671,35 +633,6 @@ float** getSquaresOfArrayElements(float* vec0, float* vec1, int vecLength) {
 		h_result[1][i] = (vec1[i] * vec1[i]);
 	}
 	
-
-	/*
-	float* d_vec0;
-	float* d_vec1;
-	float* d_result0;
-	float* d_result1;
-	
-	cudaMalloc((void**)&d_vec0, size);
-	cudaMalloc((void**)&d_vec1, size);
-    cudaMalloc((void**)&d_result0, size);
-	cudaMalloc((void**)&d_result1, size);
-
-	// Copy vector from host memory to device memory
-    cudaMemcpy(d_vec0, vec0, size, cudaMemcpyHostToDevice);
-	cudaMemcpy(d_vec1, vec1, size, cudaMemcpyHostToDevice);
-
-	// Invoke kernel
-    VecMult<<<blocksPerGrid, threadsPerBlock>>>(d_vec0, d_vec1, d_result0, d_result1, vecLength);
-
-	// Copy result from device memory to host memory
-    // h_result contains the result in host memory
-    cudaMemcpy(h_result[0], d_result0, size, cudaMemcpyDeviceToHost);
-	cudaMemcpy(h_result[1], d_result1, size, cudaMemcpyDeviceToHost);
-	
-	cleanDeviceMemory(d_vec0);
-	cleanDeviceMemory(d_vec1);
-	cleanDeviceMemory(d_result0);
-	cleanDeviceMemory(d_result1);*/
-	
 	return h_result;
 }
 
@@ -732,30 +665,6 @@ float* shiftInParallel(float* vec, int vecLength, short delay, int maxLength) {
 	for (int i = 0; i < (vecLength-delay); i++) {
 		h_result[i] = vec[i+delay];
 	}
-	
-	
-	/*
-	float* d_vec = NULL;
-	float* d_result = NULL;
-	
-	int vecSize = vecLength * sizeof(float);
-	int size = maxLength * sizeof(float);
-	
-	cudaMalloc( (void**)&d_vec, vecSize );
-    cudaMalloc((void**)&d_result, size);
-
-	// Copy vector from host memory to device memory
-    cudaMemcpy(d_vec, vec, vecLength*sizeof(float), cudaMemcpyHostToDevice);
-
-	// Invoke kernel
-    shiftArrayElementsInParallel<<<blocksPerGrid, threadsPerBlock>>>(d_vec, vecLength, d_result, delay);
-
-	// Copy result from device memory to host memory
-    // h_result contains the result in host memory
-    cudaMemcpy(h_result, d_result, size, cudaMemcpyDeviceToHost);
-	
-	cleanDeviceMemory(d_vec);
-	cleanDeviceMemory(d_result);*/
 	
 	return h_result;
 }
@@ -1594,18 +1503,6 @@ void dec_poly(int hlength, float* sist, int sistLength, float** G, int* G_size, 
 	//float*** ip_aux_streamed = computeIpAuxStream(Hp, hlength/2, Fp, hlength/2);
 	
 	float*** ip_aux = computeIpAux(Hp, hlength/2, Fp, hlength/2);
-	
-	/*
-	for (int dim1 = 0; dim1 < 2; dim1++) {
-		for (int dim2 = 0; dim2 < 2; dim2++) {
-			printf("\n\n[%d][%d]---------------------\n", dim1, dim2);
-			for (int i = 0; i < 7; i++) {
-				printf("ip_aux_streamed[%d] = %1.15f\t\tIp_aux[%d] = %1.15f\n", i, ip_aux_streamed[dim1][dim2][i], i, ip_aux[dim1][dim2][i]);
-			}
-		}
-	}
-	printf("\n\n");
-	*/
 	
 	// Gp = Rp*Fp*Ip
 	float** Gp = calculateGp(Rp, sistLength, Fp, (hlength/2), ip_aux, (hlength-1));
@@ -3160,93 +3057,6 @@ float* resp_imp2(char* filtros[], int numFiltros, float** G, int* G_size, int* r
 	
 	exit(0);
 	
-//	TESTE
-//	float** G2 = (float**) malloc(height * sizeof(float*));
-//	for (int i = 0; i < height; i++) {
-//		G2[i] = (float*) malloc(widthG * sizeof(float));
-//	}
-//	cudaMemcpy2D(G2, widthG * height * sizeof(float), dev_G, pitchG, widthG, height, cudaMemcpyDeviceToHost);
-//	for (int i = 0; i < 5; i++) {
-//		for (int j = 0; j < widthG; j++) {
-//			if (G[i][j] == G2[i][j]) {
-//				printf("G[%d][%d] = %1.15f, G2[%d][%d] = %1.15f\n", i, j, G[i][j], i, j, G2[i][j]);
-//			}
-//		}
-//	}	
-//	printf("Error cudaMemcpy2D: %s\n\n", cudaGetErrorString(cudaGetLastError()));
-//	exit(0);
-	
-
-/*	
-	float** gaux = (float**) calloc((numFiltros+1), sizeof(float*));
-	
-	// TODO copiar G, G_size, filterBank, filterBankLength, atrasos para device
-	// TODO calcular gaux, L, r, r_sizes no device
-	
-	for (int i = 0; i < numFiltros+1; i++) {
-		int partialVecLength = (G_size[i]+atrasos[i]);
-		int resultLength;
-		gaux[i] = spars(getPartialVector(G[i], partialVecLength ), partialVecLength, L[i], &resultLength);
-		
-		// conv(filterBank[i], gaux[i])	
-		int convLength = (filterBankLength[i] + resultLength - 1);
-		printf("filterBankLength[%d] = %d, resultLength = %d, convLength = %d\n", i, filterBankLength[i], resultLength, convLength);
-	
-		//r[i] = convFFT(filterBank[i], filterBankLength[i], gaux[i], resultLength);
-		r[i] = convSimple(filterBank[i], filterBankLength[i], gaux[i], resultLength);
-		
-		r_sizes[i] = convLength;	
-	}
-*/
-
-
-/*
-	int maxR = max(r_sizes, numFiltros+1);
-	float* res = (float*) calloc(maxR, sizeof(float));
-	float** raux = (float**) malloc((numFiltros + 1) * sizeof(float*));
-	
-	for (int i = 0; i < (numFiltros + 1); i++) {
-		raux[i] = (float*) malloc(maxR * sizeof(float));
-		for (int j = 0; j < maxR; j++) {
-			printf("r[%d][%d] = %1.15f\n", i, j, r[i][j]);
-			if (j < r_sizes[i]) {
-				raux[i][j] = r[i][j];
-			} else {
-				raux[i][j] = 0.0;
-			}
-		}
-	}
-	
-	float* dev_r;
-	float* dev_aux_sum;
-	
-	INIT_RUNTIME;
-	cudaMalloc( (void**)&dev_aux_sum, maxR * sizeof(float) );
-	initializeArray<<<32,ceil(maxR/32.0)>>>(dev_aux_sum, maxR);
-	
-	for (int i = 0; i < (numFiltros + 1); i++) {
-		cudaMalloc( (void**)&dev_r, r_sizes[i] * sizeof(float) );
-		initializeArray<<<32,ceil(maxR/32.0)>>>(dev_r, r_sizes[i]);
-		cudaMemcpy(dev_r, r[i], r_sizes[i] * sizeof(float), cudaMemcpyHostToDevice );
-		sumColumns<<<32,ceil(maxR/32.0)>>>(dev_r, r_sizes[i], dev_aux_sum, maxR);
-		cudaFree(dev_r);
-	}
-		
-	cudaMemcpy(res, dev_aux_sum, maxR * sizeof(float), cudaMemcpyDeviceToHost);
-
-	cudaFree(dev_aux_sum);	
-	cudaFree(dev_r);
-	END_RUNTIME; printf("\n[loop2]: "); PRINT_RUNTIME;
-	
-	int maxHlength = max(filterBankLength, numFiltros+1);
-	float* resFinal = (float*) calloc((maxR - maxHlength), sizeof(float));
-	
-	for (int i = 0; i < (maxR-maxHlength); i++) {
-		resFinal[i] = res[maxHlength + i];
-	}
-	
-	*resultLength = (maxR-maxHlength);
-*/
 	float* resFinal;
 	return resFinal;
 }

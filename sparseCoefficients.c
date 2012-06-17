@@ -306,14 +306,6 @@ float** getSparseCoefficients(int elev, int azim, int ear, int* Gp_size) {
 		free(Gb_size);
 	}
 	
-	/*printf("getSparseCoefficients\n: ");
-	for (int i = 0; i < 10; i++) {
-		printf("Gp[1][%d] = %1.15f\n", i, Gp[1][i]);
-	}
-	
-	for (int i = 0; i < 5; i++) {
-		printf("Gp_size[%d] = %d\n", i, Gp_size[i]);
-	}*/
 	return Gp;
 }
 

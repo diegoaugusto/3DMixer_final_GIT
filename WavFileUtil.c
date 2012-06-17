@@ -112,13 +112,6 @@ Uint8* getStreamUint8(char* filename, SDL_AudioSpec *wavSpec) {
 		exit(-1);
 	}	
 	
-	/*printf("wav_spec.freq = %d\n", wav_spec.freq);
-	 printf("wav_spec.format = %d\n", wav_spec.format);
-	 printf("wav_spec.channels = %d\n", wav_spec.channels);
-	 printf("wav_spec.silence = %d\n", wav_spec.silence);
-	 printf("wav_spec.samples = %d\n", wav_spec.samples);
-	 printf("wav_spec.size = %d\n", wav_spec.size);*/
-	
 	wav_spec.size = wav_len;
 	*wavSpec = wav_spec;
 	
@@ -134,14 +127,7 @@ float** getStream(char* filename, SDL_AudioSpec *wavSpec) {
 		fprintf(stderr, "Could not open %s: %s\n", filename, SDL_GetError());
 		SDL_CloseAudio();
 		exit(-1);
-	}	
-	
-	/*printf("wav_spec.freq = %d\n", wav_spec.freq);
-	printf("wav_spec.format = %d\n", wav_spec.format);
-	printf("wav_spec.channels = %d\n", wav_spec.channels);
-	printf("wav_spec.silence = %d\n", wav_spec.silence);
-	printf("wav_spec.samples = %d\n", wav_spec.samples);
-	printf("wav_spec.size = %d\n", wav_spec.size);*/
+	}
 	
 	short numOfChannels = wav_spec.channels;
 	int numOfSamplesInChannel = (wav_len/2);
